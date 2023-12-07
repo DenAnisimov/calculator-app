@@ -5,13 +5,14 @@ import java.util.regex.Pattern;
 
 public class Calculator {
     public static int calculateFormula(String formula) {
-        String regexCorrectFormula = "\\d+ [+\\-*\\/] \\d+";
+        String regexCorrectFormula = "^(?<![-.])\\b[0-9]+\\b(?!\\.[0-9]) [+\\-*\\/] (?<![-.])\\b[0-9]+\\b(?!\\.[0-9])$";
         Pattern pattern = Pattern.compile(regexCorrectFormula);
         Matcher matcher = pattern.matcher(formula);
         if (!matcher.find()) {
-            throw new IllegalArgumentException("Wrong format. Correct format: 1 + 1, 32 / 2, 6 * 5, 2 - 2");
+            throw new IllegalArgumentException("Неверный формат. Корректный формат: 1 + 1, 6 / 2, 6 * 5, 2 - 2");
         }
 
+        int[] numMass = new int[2];
         int firstNum = 0;
         int secondNum = 0;
         char mathOperation = ' ';
@@ -20,11 +21,19 @@ public class Calculator {
         pattern = Pattern.compile(regexInteger);
         matcher = pattern.matcher(formula);
 
+        int i = 0;
         while (matcher.find()) {
-            if (firstNum == 0) {
-                firstNum = Integer.parseInt(matcher.group());
-            }
-            secondNum = Integer.parseInt(matcher.group());
+            numMass[i++] = Integer.parseInt(matcher.group());
+        }
+
+        firstNum = numMass[0];
+        secondNum = numMass[1];
+
+        if (!isNumCorrect(firstNum)) {
+            throw new IllegalArgumentException("Число долбыть от 1 до 10 включительно, не более.");
+        }
+        if (!isNumCorrect(secondNum)) {
+            throw new IllegalArgumentException("Число долбыть от 1 до 10 включительно, не более.");
         }
 
         String regexMathOperation = "[+\\-*\\/]";
@@ -36,6 +45,13 @@ public class Calculator {
         }
 
         return calculate(firstNum, secondNum, mathOperation);
+    }
+
+    private static boolean isNumCorrect(int num) {
+        if (num >= 1 && num <= 10) {
+            return true;
+        }
+        return false;
     }
 
     private static int calculate(int firstNum, int secondNum, char mathOperation) {
